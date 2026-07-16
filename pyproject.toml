@@ -1,0 +1,22 @@
+[project]
+name = "tributaryfs"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "alembic>=1.18.5",
+    "fastapi>=0.139.0",
+    "pydantic>=2.13.4",
+    "ruff>=0.15.22",
+    "toml>=0.10.2",
+]
+[tool.ruff]
+line-length = 92
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
