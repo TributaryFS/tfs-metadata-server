@@ -1,16 +1,20 @@
+import os
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Union
 
 import toml
+from dotenv import load_dotenv
 
 FILE_PATH = Path(__file__).with_name("config.toml")
+load_dotenv()
 
 
 @dataclass(frozen=True)
 class Config:
     ENCRYPTION_ALGORITHM: str
     MAX_CHUNK_REPLICA: int
+    DATABASE_URL: str = os.getenv("DATABASE_URL", "")
 
     @classmethod
     def from_file(cls, filepath: Union[Path, str] = FILE_PATH) -> "Config":

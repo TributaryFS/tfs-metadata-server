@@ -16,7 +16,6 @@ from sqlalchemy.dialects.postgresql import INET, UUID
 
 from app.db import Base
 from app.enums import ChunkStatus, Cluster, NodeStatus, PermissionLevel
-from config_reader import CONFIG
 
 
 class User(Base):
@@ -116,9 +115,7 @@ class Chunk(Base):
     encryption_key_id = Column(String, nullable=False)
     logical_offset = Column(BigInteger, nullable=False)
     reference_count = Column(Integer, nullable=False, default=1)
-    current_replica_count = Column(
-        Integer, nullable=False, default=0, max=CONFIG.MAX_CHUNK_REPLICA
-    )
+    current_replica_count = Column(Integer, nullable=False, default=0)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(
         DateTime(timezone=True), onupdate=func.now(), server_default=func.now()
@@ -165,9 +162,7 @@ class ChunkReplica(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
     chunk_id = Column(UUID(as_uuid=True), ForeignKey("chunks.id"), nullable=False)
     node_id = Column(UUID(as_uuid=True), ForeignKey("nodes.id"), nullable=False)
-    replica_index = Column(
-        Integer, nullable=False, default=0, max=CONFIG.MAX_CHUNK_REPLICA - 1
-    )
+    replica_index = Column(Integer, nullable=False, default=0)
     status = Column(Enum(ChunkStatus), nullable=False, default=ChunkStatus.PENDING)
     path = Column(String, nullable=False)
     last_verified = Column(DateTime(timezone=True), nullable=True)
