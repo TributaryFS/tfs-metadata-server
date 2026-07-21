@@ -23,7 +23,9 @@ The project should demonstrate:
 - Production-grade Backend Engineering
 
 ---
-
+pluggable node selection algorithms.
+frames
+upload sessions
 encryption iv will be first  12 bytes and tag will be last 16 bytes.
 # Tech Stack bytes and tag will be last 
 
