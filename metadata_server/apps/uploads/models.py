@@ -1,8 +1,7 @@
 import uuid
 
+from apps.uploads.choices import UploadStatus
 from django.db import models
-
-from uploads.choices import UploadStatus
 
 
 class Upload(models.Model):
@@ -14,7 +13,9 @@ class Upload(models.Model):
     completed_at = models.DateTimeField(null=True)
     total_files = models.IntegerField(null=False)
     expires_at = models.DateTimeField(null=True)
-    user = models.ForeignKey("users.User", on_delete=models.CASCADE, related_name="uploads")
+    user = models.ForeignKey(
+        "users.User", on_delete=models.CASCADE, related_name="uploads"
+    )
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

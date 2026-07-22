@@ -1,8 +1,7 @@
 from uuid import uuid4
 
+from apps.permissions.choices import Permission
 from django.db import models
-
-from permissioins.choices import Permission
 
 
 class DirectoryPermission(models.Model):

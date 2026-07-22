@@ -1,8 +1,7 @@
 from uuid import uuid4
 
+from apps.storage.choices import ChunkStatus, Cluster, NodeStatus
 from django.db import models
-
-from storage.choices import ChunkStatus, Cluster, NodeStatus
 
 
 class Chunk(models.Model):
@@ -42,7 +41,9 @@ class Node(models.Model):
     class Meta:
         db_table = "nodes"
         constraints = [
-            models.UniqueConstraint(fields=["ip_address", "port"], name="uq_node_ip_port"),
+            models.UniqueConstraint(
+                fields=["ip_address", "port"], name="uq_node_ip_port"
+            ),
         ]
 
 
