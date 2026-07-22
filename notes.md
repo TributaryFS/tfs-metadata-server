@@ -793,3 +793,26 @@ COMPLETED
 FAILED
 CANCELLED
 EXPIRED         
+
+
+
+
+FileUpload Workflow:
+0. check client access to parent directory
+1. client checks if file present with same local path
+2. if yes -> check if  file ulpload session status is not complete
+        if yes -> ask for resume or new upload
+   if no -> if path is same and checksum is different , ask overwrite permission
+         -> create a new file obj in db 
+         -> change permission of older file obj version to orphan
+         -> check chunk cheksums and send which chunks to upload on which node based on node availibilty
+         -> if new file upload unsuccesful
+            -> if due to unforseen error : revert permission status old file obj and ask client to re-upload
+            -> if due to client cancellation: revert permission status old file obj  and delete new file obj
+3. if file version above max-version-config then grabage collector remove oldest file obj ver and remove permission access for the same 
+
+
+listdir Workflow:
+0. check current dir perssioms
+1. list all child files and sub-dirs for which user has atleat read access
+
