@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     "apps.storage",
     "apps.uploads",
     "apps.users",
+    "rest_framework",
 ]
 
 MIDDLEWARE = [
@@ -127,3 +128,11 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = "static/"
+
+REST_FRAMEWORK = {
+    # Use Django's standard `django.contrib.auth` permissions,
+    # or allow read-only access for unauthenticated users.
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly"
+    ]
+}
