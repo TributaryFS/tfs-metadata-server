@@ -1,5 +1,6 @@
 from uuid import uuid4
 
+from apps.filesystem.models import Directory
 from django.db import models
 
 
@@ -14,3 +15,7 @@ class User(models.Model):
         constraints = [
             models.UniqueConstraint(fields=["username"], name="uq_user_username"),
         ]
+
+    @property
+    def root_directory(self):
+        return Directory.objects.get(owner=self, parent_directory=None)

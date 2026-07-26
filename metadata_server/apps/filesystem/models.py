@@ -21,28 +21,9 @@ class Directory(models.Model):
 
     class Meta:
         db_table = "directories"
-
-
-class DirectorySubdirectoryAssociation(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    parent_directory = models.ForeignKey(
-        "filesystem.Directory",
-        on_delete=models.CASCADE,
-        related_name="child_associations",
-    )
-    child_directory = models.ForeignKey(
-        "filesystem.Directory",
-        on_delete=models.CASCADE,
-        related_name="parent_associations",
-    )
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        db_table = "directory_subdirectory_associations"
         constraints = [
             models.UniqueConstraint(
-                fields=["parent_directory", "child_directory"],
+                fields=["name", "owner", "parent_directory"],
                 name="uq_directory_hierarchy_parent_child",
             ),
         ]
@@ -74,28 +55,9 @@ class File(models.Model):
 
     class Meta:
         db_table = "files"
-
-
-class DirectoryFileAssociation(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    directory = models.ForeignKey(
-        "filesystem.Directory",
-        on_delete=models.CASCADE,
-        related_name="file_associations",
-    )
-    file = models.ForeignKey(
-        "filesystem.File",
-        on_delete=models.CASCADE,
-        related_name="directory_associations",
-    )
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        db_table = "directory_file_associations"
         constraints = [
             models.UniqueConstraint(
-                fields=["directory", "file"],
+                fields=["name", "owner", "parent_directory"],
                 name="uq_directory_file",
             ),
         ]
