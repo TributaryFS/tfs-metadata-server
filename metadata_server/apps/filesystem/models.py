@@ -7,7 +7,7 @@ class Directory(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=255, null=False)
     owner = models.ForeignKey(
-        "users.User", on_delete=models.CASCADE, related_name="owned_directories"
+        "users.User", on_delete=models.RESTRICT, related_name="owned_directories"
     )
     parent_directory = models.ForeignKey(
         "self",
@@ -35,7 +35,7 @@ class File(models.Model):
     local_path = models.CharField(max_length=1024, null=False)
     tributary_path = models.CharField(max_length=1024, null=False)
     owner = models.ForeignKey(
-        "users.User", on_delete=models.CASCADE, related_name="owned_files"
+        "users.User", on_delete=models.RESTRICT, related_name="owned_files"
     )
     parent_directory = models.ForeignKey(
         "filesystem.Directory", on_delete=models.CASCADE, related_name="files"

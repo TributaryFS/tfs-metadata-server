@@ -1,4 +1,5 @@
 from apps.filesystem.models import Directory
+from django.db import transaction
 from rest_framework import serializers
 
 from .models import User
@@ -10,10 +11,14 @@ class UserSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
     def create(self, validated_data):
-        self.create_root_dir(validated_data.get("id"))
-        return User.objects.create(**validated_data)
+        with transaction.atomic():
+            user = super().create(validated_data)
+            self._create_root_directory(user)
+            return user
 
     @staticmethod
-    def create_root_dir(user_id):
-        data = {"name": "/", "owner": user_id, "parent_directory": None}
-        Directory(data=data)
+    def _create_root_directory(user):
+        Directory.objects.create(
+            name="/",
+            owner=user,
+        )

@@ -6,9 +6,6 @@ from django.db import models
 
 class Chunk(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
-    file = models.ForeignKey(
-        "filesystem.File", on_delete=models.CASCADE, related_name="chunks"
-    )
     checksum = models.CharField(max_length=255, null=False)
     actual_size = models.BigIntegerField(null=False)
     stored_size = models.BigIntegerField(null=False)
