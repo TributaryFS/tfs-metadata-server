@@ -816,3 +816,313 @@ listdir Workflow:
 0. check current dir perssioms
 1. list all child files and sub-dirs for which user has atleat read access
 
+
+```
+logical_offset is the position (in bytes) where a chunk begins within the logical file.
+
+It isn't required for your first version of TributaryFS, but it's a concept used in many storage systems.
+
+Let's build it from first principles.
+
+Suppose your chunk size is 4 MB
+
+You have a 12 MB file.
+
+movie.mp4
+
+12 MB
+
+After chunking:
+
+Chunk 0   4 MB
+Chunk 1   4 MB
+Chunk 2   4 MB
+
+Their positions in the file are:
+
+Chunk	Starts at byte
+Chunk 0	0
+Chunk 1	4,194,304
+Chunk 2	8,388,608
+
+These starting positions are the logical offsets.
+
+So your FileChunk table could look like
+file_id	chunk_id	chunk_index	logical_offset
+A	C1	0	0
+A	C2	1	4,194,304
+A	C3	2	8,388,608
+Why not just use chunk_index?
+
+For your project, you probably can.
+
+If every chunk except the last is always exactly 4 MB:
+
+logical_offset =
+chunk_index × chunk_size
+
+So
+
+Chunk 5
+
+↓
+
+Offset = 5 × 4 MB = 20 MB
+
+No need to store it.
+
+When is logical_offset useful?
+
+Imagine later you implement:
+
+Variable-sized chunking (Content Defined Chunking)
+
+Instead of fixed 4 MB chunks:
+
+Chunk 0 -> 3.2 MB
+
+Chunk 1 -> 4.7 MB
+
+Chunk 2 -> 2.9 MB
+
+Now
+
+Chunk	Offset
+0	0
+1	3.2 MB
+2	7.9 MB
+
+You can't compute the offset from the index anymore.
+
+Sparse files
+
+Suppose a VM disk image has a 1 GB hole:
+
+Chunk 0
+
+↓
+
+1 GB gap
+
+↓
+
+Chunk 1
+
+Now
+
+Chunk 1
+
+offset = 1 GB
+
+Even though it's only the second chunk.
+
+Partial reads
+
+Suppose a client asks:
+
+Give me bytes
+
+8 MB → 12 MB
+
+The storage system can quickly determine which chunks overlap that byte range using their offsets.
+
+Should TributaryFS have it?
+
+For Version 1, I would not store logical_offset.
+
+Instead, keep:
+
+FileChunk
+
+file_id
+
+chunk_id
+
+chunk_index
+
+Since you're using fixed-size chunks, the offset is simply:
+
+logical_offset = chunk_index * CHUNK_SIZE
+
+Easy.
+
+If you later add rsync-like synchronization or content-defined chunking
+
+Then I'd extend the schema to:
+
+FileChunk
+
+file_id
+
+chunk_id
+
+chunk_index
+
+logical_offset
+
+At that point, logical_offset becomes valuable because chunk sizes are no longer fixed.
+
+My recommendation
+
+For the roadmap you're following:
+
+✅ Keep chunk_index
+❌ Skip logical_offset for now
+
+It's one of those fields that becomes useful only when you move beyond fixed-size chunking into more advanced storage techniques. Starting without it keeps your schema simpler while leaving room to add it later if your design evolves.
+```
+
+
+
+Common CDC Algos:
+    Rabin Fingerprint
+    Buzhash
+    Gear Hash (FastCDC)
+    AE Hash
+
+## High-Level Architecture
+
+```
+                    +----------------------+
+                    |   React Dashboard    |
+                    +----------+-----------+
+                               |
+                      HTTPS + WebSockets`
+                               |
++-----------+         +--------v--------+
+| CLI Client| ------> | Metadata Server |
++-----------+  HTTPS  +--------+--------+
+                               |
+                    PostgreSQL / Redis
+                               |
+          Upload Session & Chunk Assignment
+                               |
+         +---------------------+----------------------+
+         |                     |                      |
+         |   Custom TCP        |   Custom TCP         |
+         |                     |                      |
++--------v------+    +---------v------+    +----------v------+
+| Storage Node A|    | Storage Node B |    | Storage Node C  |
++---------------+    +----------------+    +-----------------+
+         ^                    ^                      ^
+         |<------ Replication / Heartbeats --------->|
+                (TCP initially, gRPC as stretch)
+```
+---
+
+## Upload Workflow
+
+1. Client requests an upload session from the Metadata Server.
+2. Metadata Server determines:
+   - Chunk size
+   - Chunk IDs
+   - Storage node assignment
+3. Client splits the file into chunks.
+4. Client opens TCP connections directly to storage nodes.
+5. Storage nodes verify, compress (optional), encrypt (optional), and persist chunks.
+6. Storage nodes acknowledge successful writes.
+7. Metadata Server commits the completed upload.
+---
+## Storage Pipeline
+
+For each uploaded file:
+
+```
+File
+    ↓
+Chunk
+    ↓
+SHA256 (logical hash)
+    ↓
+Deduplication
+    ↓
+Compress (optional)
+    ↓
+Encrypt (optional)
+    ↓
+Store
+```
+## Communication
+
+### Client → Metadata Server
+
+- HTTPS
+- REST APIs
+- JWT Authentication
+
+### Client → Storage Node
+
+- Custom Binary TCP Protocol
+- High-throughput streaming
+- Parallel chunk uploads
+- Resume support
+
+### Storage Node ↔ Storage Node
+
+Initially:
+
+- Custom TCP
+
+Future:
+
+- gRPC
+- Streaming replication
+- Heartbeats
+- Replica synchronization
+
+### Dashboard
+
+- HTTPS
+- WebSockets for live cluster updates
+
+---
+
+## Design Philosophy
+
+The system separates metadata management from actual data transfer.
+
+### Control Plane
+
+Responsible for coordination and cluster management.
+
+Implemented using **FastAPI (HTTPS)**.
+
+Responsibilities:
+
+- Authentication
+- Upload/download session creation
+- File & directory namespace
+- Chunk metadata
+- Chunk placement decisions
+- Node discovery
+- Replication metadata
+- Cluster health
+- User management
+
+The metadata server **never stores file data**.
+
+---
+
+### Data Plane
+
+Responsible for transferring and storing file chunks.
+
+Implemented using a **custom TCP protocol**.
+
+Responsibilities:
+
+- Upload chunk
+- Download chunk
+- Chunk verification
+- Replication
+- Chunk migration
+- Resume interrupted transfers
+- Storage health
+
+Clients communicate directly with storage nodes after obtaining upload instructions from the metadata server.
+
+
+
+
+it does not support sparse files 
+
