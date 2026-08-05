@@ -1,5 +1,6 @@
 import uuid
 
+from django.conf import settings
 from django.db import models
 
 
@@ -7,7 +8,9 @@ class Directory(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=255, null=False)
     owner = models.ForeignKey(
-        "users.User", on_delete=models.RESTRICT, related_name="owned_directories"
+        settings.AUTH_USER_MODEL,
+        on_delete=models.RESTRICT,
+        related_name="owned_directories",
     )
     parent_directory = models.ForeignKey(
         "self",
@@ -21,7 +24,7 @@ class Directory(models.Model):
 
     class Meta:
         db_table = "directories"
-        constraints = [
+        constraints = [  # noqa: RUF012
             models.UniqueConstraint(
                 fields=["name", "owner", "parent_directory"],
                 name="uq_directory_hierarchy_parent_child",
@@ -35,7 +38,7 @@ class File(models.Model):
     local_path = models.CharField(max_length=1024, null=False)
     tributary_path = models.CharField(max_length=1024, null=False)
     owner = models.ForeignKey(
-        "users.User", on_delete=models.RESTRICT, related_name="owned_files"
+        settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, related_name="owned_files"
     )
     parent_directory = models.ForeignKey(
         "filesystem.Directory", on_delete=models.CASCADE, related_name="files"
@@ -48,14 +51,16 @@ class File(models.Model):
     )
     last_modified = models.DateTimeField(auto_now=True)
     last_modified_by = models.ForeignKey(
-        "users.User", on_delete=models.CASCADE, related_name="modified_files"
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="modified_files",
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         db_table = "files"
-        constraints = [
+        constraints = [  # noqa: RUF012
             models.UniqueConstraint(
                 fields=["name", "owner", "parent_directory"],
                 name="uq_directory_file",
@@ -81,7 +86,7 @@ class FileChunkAssociation(models.Model):
 
     class Meta:
         db_table = "file_chunk_associations"
-        constraints = [
+        constraints = [  # noqa: RUF012
             models.UniqueConstraint(
                 fields=["file", "chunk"],
                 name="uq_file_chunk",

@@ -1,6 +1,7 @@
 from uuid import uuid4
 
 from apps.permissions.choices import Permission
+from django.conf import settings
 from django.db import models
 
 
@@ -10,7 +11,9 @@ class DirectoryPermission(models.Model):
         "filesystem.Directory", on_delete=models.CASCADE, related_name="permissions"
     )
     user = models.ForeignKey(
-        "users.User", on_delete=models.CASCADE, related_name="directory_permissions"
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="directory_permissions",
     )
     permission_level = models.CharField(
         max_length=50, choices=Permission.choices, default=Permission.READ
@@ -20,7 +23,7 @@ class DirectoryPermission(models.Model):
 
     class Meta:
         db_table = "directory_permissions"
-        constraints = [
+        constraints = [  # noqa: RUF012
             models.UniqueConstraint(
                 fields=["directory", "user"], name="uq_directory_permission"
             ),
@@ -33,7 +36,9 @@ class FilePermission(models.Model):
         "filesystem.File", on_delete=models.CASCADE, related_name="permissions"
     )
     user = models.ForeignKey(
-        "users.User", on_delete=models.CASCADE, related_name="file_permissions"
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="file_permissions",
     )
     permission_level = models.CharField(
         max_length=50, choices=Permission.choices, default=Permission.READ
@@ -43,6 +48,6 @@ class FilePermission(models.Model):
 
     class Meta:
         db_table = "file_permissions"
-        constraints = [
+        constraints = [  # noqa: RUF012
             models.UniqueConstraint(fields=["file", "user"], name="uq_file_permission"),
         ]
