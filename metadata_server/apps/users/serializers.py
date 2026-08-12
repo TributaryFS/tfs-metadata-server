@@ -1,10 +1,12 @@
 from apps.filesystem.models import Directory
+from apps.permissions.choices import Permission
+from apps.permissions.models import DirectoryPermission
+from apps.users.models import User
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db import transaction
 from rest_framework import serializers
-
-from .models import User
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 
 class UserCreateSerializer(serializers.ModelSerializer):
@@ -21,9 +23,12 @@ class UserCreateSerializer(serializers.ModelSerializer):
 
     @staticmethod
     def _create_root_directory(user):
-        Directory.objects.create(
+        directory = Directory.objects.create(
             name="/",
             owner=user,
+        )
+        DirectoryPermission.objects.create(
+            user=user, directory=directory, permission_level=Permission.OWNER
         )
 
 
@@ -45,6 +50,12 @@ class PasswordUpdateSerializer(serializers.Serializer):
     )
     new_password = serializers.CharField(
         write_only=True, required=True, trim_whitespace=False
+    )
+
+    confirm_password = serializers.CharField(
+        write_only=True,
+        required=True,
+        trim_whitespace=False,
     )
 
     def validate_old_password(self, value):
@@ -82,3 +93,24 @@ class PasswordUpdateSerializer(serializers.Serializer):
 
         user.set_password(self.validated_data["new_password"])
         user.save(update_fields=["password"])
+        return user
+
+
+class TributaryTOPSerailizer(TokenObtainPairSerializer):
+    @classmethod
+    def get_token(cls, user):
+        token = super().get_token(user)
+
+        token["username"] = user.username
+
+        return token
+
+    def validate(self, attrs):
+        data = super().validate(attrs)
+
+        data["user"] = {
+            "id": str(self.user.id),
+            "username": self.user.username,
+        }
+
+        return data

@@ -4,7 +4,8 @@ A production-grade distributed file transfer and storage system inspired by Drop
 ## TODO
 - [ ] Phase 1:
     - [x] Design Schema for director and file namsespace
-    - [ ] User create and update routes
+    - [x] User create and update routes
+    - [ ] User Login Session flow
     - [ ] Directory/Files create routes with permission handling
     - [ ] Node/Chunk create and update routes
     - [ ] Design File version schema and flow

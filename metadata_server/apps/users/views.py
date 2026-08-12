@@ -3,17 +3,19 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework_simplejwt.views import TokenObtainPairView
 
 from .models import User
 from .serializers import (
     PasswordUpdateSerializer,
+    TributaryTOPSerailizer,
     UserCreateSerializer,
     UserDetailSerializer,
     UserUpdateSerializer,
 )
 
 
-class UserAPIView(APIView):
+class UserListCreateView(APIView):
     def get(self, request):
         user_qs = User.objects.all()
         serializer = UserDetailSerializer(user_qs, many=True)
@@ -56,3 +58,7 @@ class ChangePasswordView(APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response({"detail": "Password updated successfully"}, status.HTTP_200_OK)
+
+
+class LoginView(TokenObtainPairView):
+    serializer_class = TributaryTOPSerailizer

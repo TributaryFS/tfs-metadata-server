@@ -1,9 +1,8 @@
 from django.urls import path
 
-from .views import DirectoryAPIView, DirectoryListCreateView, FileListCreateView
+from .views import DirectoryDetailView, DirectoryListCreateView
 
 urlpatterns = [
-    path("directories/old/", DirectoryListCreateView.as_view()),
-    path("files/", FileListCreateView.as_view()),
-    path("directories/", DirectoryAPIView.as_view()),
+    path("directories/", DirectoryListCreateView.as_view()),
+    path("directories/<uuid:directory_id>/", DirectoryDetailView.as_view()),
 ]
