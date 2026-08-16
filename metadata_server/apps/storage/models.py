@@ -10,7 +10,6 @@ class Chunk(models.Model):
     actual_size = models.BigIntegerField(null=False)
     stored_size = models.BigIntegerField(null=False)
     encryption_key_id = models.CharField(max_length=255, null=False)
-    logical_offset = models.BigIntegerField(null=False)
     reference_count = models.IntegerField(null=False, default=1)
     replica_count = models.IntegerField(null=False, default=0)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -37,7 +36,7 @@ class Node(models.Model):
 
     class Meta:
         db_table = "nodes"
-        constraints = [
+        constraints = [  # noqa: RUF012
             models.UniqueConstraint(
                 fields=["ip_address", "port"], name="uq_node_ip_port"
             ),
@@ -59,7 +58,7 @@ class ChunkReplica(models.Model):
 
     class Meta:
         db_table = "chunk_replicas"
-        constraints = [
+        constraints = [  # noqa: RUF012
             models.UniqueConstraint(
                 fields=["chunk", "node"], name="uq_chunk_replica_chunk_id_node_id"
             ),

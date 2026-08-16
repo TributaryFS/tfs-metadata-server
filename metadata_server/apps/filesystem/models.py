@@ -26,7 +26,7 @@ class Directory(models.Model):
         db_table = "directories"
         constraints = [  # noqa: RUF012
             models.UniqueConstraint(
-                fields=["name", "owner", "parent_directory"],
+                fields=["name", "parent_directory"],
                 name="uq_directory_hierarchy_parent_child",
             ),
         ]
@@ -50,7 +50,7 @@ class File(models.Model):
         db_table = "files"
         constraints = [  # noqa: RUF012
             models.UniqueConstraint(
-                fields=["name", "owner", "parent_directory"],
+                fields=["name", "parent_directory"],
                 name="uq_directory_file",
             ),
         ]

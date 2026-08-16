@@ -16,7 +16,8 @@ class DirectoryPermission(models.Model):
         related_name="directory_permissions",
     )
     permission_level = models.CharField(
-        max_length=50, choices=Permission.choices, default=Permission.READ
+        max_length=25,
+        choices=Permission.choices,
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -41,7 +42,8 @@ class FilePermission(models.Model):
         related_name="file_permissions",
     )
     permission_level = models.CharField(
-        max_length=50, choices=Permission.choices, default=Permission.READ
+        max_length=25,
+        choices=Permission.choices,
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
