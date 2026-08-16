@@ -4,9 +4,11 @@ from rest_framework.permissions import BasePermission
 
 
 class DirectoryPermissionRequired(BasePermission):
-    required_permission = Permission.ORPHAN
+    required_permission = None
 
     def has_object_permission(self, request, view, obj):
+        if self.required_permission is None:
+            return False
 
         return has_directory_permission(
             user=request.user,

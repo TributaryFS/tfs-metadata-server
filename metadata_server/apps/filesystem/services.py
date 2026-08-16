@@ -7,7 +7,7 @@ from rest_framework.exceptions import PermissionDenied
 
 
 @transaction.atomic
-def create_directory(user, name, parent_directory):
+def create_directory(*, user, name, parent_directory):
     if not has_directory_permission(
         user=user, directory=parent_directory, required_permission=Permission.WRITE
     ):

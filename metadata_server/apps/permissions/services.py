@@ -9,13 +9,19 @@ PERMISSION_RANK = {
 }
 
 
-def has_directory_permission(user, directory, required_permission):
-    permission = (
-        DirectoryPermission.objects.filter(user=user, directory=directory)
-        .values_list("permission_level", flat=True)
-        .first()
-    )
-    if not permission:
-        return False
+def has_directory_permission(*, user, directory, required_permission):
 
-    return PERMISSION_RANK[permission] >= PERMISSION_RANK[required_permission]
+    current_directory = directory
+
+    while current_directory is not None:
+        permission = (
+            DirectoryPermission.objects.filter(user=user, directory=current_directory)
+            .values_list("permission_level", flat=True)
+            .first()
+        )
+        if permission:
+            return PERMISSION_RANK[permission] >= PERMISSION_RANK[required_permission]
+
+        current_directory = current_directory.parent_directory
+
+    return False
