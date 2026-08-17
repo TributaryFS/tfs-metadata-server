@@ -23,3 +23,15 @@ def create_directory(*, user, name, parent_directory):
     )
 
     return directory
+
+
+@transaction.atomic
+def rename_directory(*, user, directory, new_name):
+    if not has_directory_permission(
+        user=user, directory=directory, required_permission=Permission.OWNER
+    ):
+        raise PermissionDenied("You do not have permission to rename the directory")
+
+    directory.name = new_name
+    directory.save(update_fields=["name", "updated_at"])
+    return directory

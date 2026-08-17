@@ -39,3 +39,9 @@ class DirectorySerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         ]
+
+
+class DirectoryRenameSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Directory
+        fields = ["name"]  # noqa: RUF012

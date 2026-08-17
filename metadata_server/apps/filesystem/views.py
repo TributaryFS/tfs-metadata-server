@@ -1,5 +1,5 @@
-from apps.filesystem.permissions import CanReadDirectory
-from apps.filesystem.services import create_directory
+from apps.filesystem.permissions import CanOwnDirectory, CanReadDirectory
+from apps.filesystem.services import create_directory, rename_directory
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
@@ -7,10 +7,10 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .models import Directory
-from .serializers import DirectorySerializer
+from .serializers import DirectoryRenameSerializer, DirectorySerializer
 
 
-class DirectoryListCreateView(APIView):
+class DirectoryAPIView(APIView):
     permission_classes = [IsAuthenticated]  # noqa: RUF012
 
     def post(self, request):
@@ -33,7 +33,22 @@ class DirectoryListCreateView(APIView):
 
 
 class DirectoryDetailView(APIView):
-    permission_classes = [IsAuthenticated, CanReadDirectory]  # noqa: RUF012
+    def get_permissions(self):
+        if self.request.method == "GET":
+            return [
+                IsAuthenticated(),
+                CanReadDirectory(),
+            ]
+
+        if self.request.method == "PATCH":
+            return [
+                IsAuthenticated(),
+                CanOwnDirectory(),
+            ]
+
+        return [
+            IsAuthenticated(),
+        ]
 
     def get(self, request, directory_id):
         directory = get_object_or_404(Directory, id=directory_id)
@@ -44,3 +59,19 @@ class DirectoryDetailView(APIView):
         serializer = DirectorySerializer(directory)
 
         return Response(serializer.data)
+
+    def patch(self, request, directory_id):
+        directory = get_object_or_404(Directory, id=directory_id)
+        self.check_object_permissions(request, directory)
+
+        serializer = DirectoryRenameSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        directory = rename_directory(
+            user=self.request.user,
+            directory=directory,
+            new_name=serializer.validated_data["new_name"],
+        )
+        return Response(
+            DirectorySerializer(directory).data,
+            status=status.HTTP_200_OK,
+        )
