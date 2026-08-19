@@ -69,7 +69,7 @@ class DirectoryDetailView(APIView):
         directory = rename_directory(
             user=self.request.user,
             directory=directory,
-            new_name=serializer.validated_data["new_name"],
+            new_name=serializer.validated_data["name"],
         )
         return Response(
             DirectorySerializer(directory).data,
