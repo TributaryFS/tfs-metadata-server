@@ -25,6 +25,11 @@ class FileSerializer(serializers.ModelSerializer):
 
 
 class DirectorySerializer(serializers.ModelSerializer):
+    def validate_name(self, value):
+        if value == "/":
+            raise serializers.ValidationError("Directory name '/' is reserved for the root directory.")
+        return value
+
     class Meta:
         model = Directory
         fields = [  # noqa: RUF012
@@ -45,3 +50,15 @@ class DirectoryRenameSerializer(serializers.ModelSerializer):
     class Meta:
         model = Directory
         fields = ["name"]  # noqa: RUF012
+
+
+class DirectoryListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Directory
+        fields = ["id", "name"]
+
+
+class FileListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = File
+        fields = ["id", "name"]

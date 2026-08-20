@@ -63,6 +63,8 @@ A production-grade distributed file transfer and storage system inspired by Drop
     - [ ] Implement key management service and dek for encrpytion
     - [ ] pre commit
     - [ ] CI/CD
+    - [ ] Websockets for instant update of directory structure
+
 
 
 ## High-Level Architecture

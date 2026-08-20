@@ -7,7 +7,12 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .models import Directory
-from .serializers import DirectoryRenameSerializer, DirectorySerializer
+from .serializers import (
+    DirectoryListSerializer,
+    DirectoryRenameSerializer,
+    DirectorySerializer,
+    FileListSerializer,
+)
 
 
 class DirectoryAPIView(APIView):
@@ -75,3 +80,14 @@ class DirectoryDetailView(APIView):
             DirectorySerializer(directory).data,
             status=status.HTTP_200_OK,
         )
+
+
+class DirectoryChildrenView(APIView):
+    permission_classes = [IsAuthenticated, CanReadDirectory]
+
+    def get(self, request, directory_id):
+        directory = get_object_or_404(Directory, id=directory_id)
+        self.check_object_permissions(request, directory)
+        sub_dirs = DirectoryListSerializer(directory.subdirectories.all(), many=True)
+        files = FileListSerializer(directory.files.all(), many=True)
+        return Response({"subdirectories": sub_dirs.data, "files": files.data})

@@ -37,6 +37,10 @@ class UserDetailSerializer(serializers.ModelSerializer):
         model = User
         fields = ["id", "username", "first_name", "last_name", "email"]  # noqa: RUF012
 
+    def validate_name(self, value):
+        if "/" in value:
+            raise serializers.ValidationError("Directory name cannot contain '/'.")
+
 
 class UserUpdateSerializer(serializers.ModelSerializer):
     class Meta:
@@ -111,6 +115,10 @@ class TributaryTOPSerailizer(TokenObtainPairSerializer):
         data["user"] = {
             "id": str(self.user.id),
             "username": self.user.username,
+            "root_directory": {
+                "id": str(self.user.root_directory.id),
+                "name": self.user.root_directory.name,
+            },
         }
 
         return data
